@@ -18,12 +18,35 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import { useNavigate } from "react-router-dom";
+import { Pagination } from "@material-ui/lab";
+
+const useStyles = makeStyles({
+  row: {
+    backgroundColor: "#16171a",
+    cursor: "pointer",
+    "&:hover": {
+      backgroundColor: "#131111",
+    },
+    fontFamily: "Montserrat",
+  },
+  pagination: {
+    "& .MuiPaginationItem-root": {
+      color: "gold",
+    },
+  },
+});
+
+export function numberWithCommas(x) {
+  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
 
 const CoinsTable = () => {
-  const { currency } = CryptoState();
+  const { currency, symbol } = CryptoState();
   const [coins, setCoins] = useState([]);
   const [search, setSearch] = useState();
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+
   const fetchCoins = async () => {
     setLoading(true);
     const { data } = await axios.get(CoinList(currency));
@@ -56,11 +79,9 @@ const CoinsTable = () => {
     });
   };
 
+  const Navigate = useNavigate();
 
-  // const useStyles= makeStyles(()=>({}));
-  // const classes= useStyles();
-  const Navigate= useNavigate()
-
+  const classes = useStyles();
   return (
     <ThemeProvider theme={darkTheme}>
       <Container style={{ textAlign: "center" }}>
@@ -104,19 +125,57 @@ const CoinsTable = () => {
                   return (
                     <TableRow
                       onClick={() => Navigate(`/coins/${row.id}`)}
-                      // className={classes.raw}
+                      className={classes.raw}
                       key={row.name}
                     >
-                      <TableCell component="th" scope="row" styles={{
-                        display:"flex",
-                        gap:15
-                      }}>
-                        <img src={row?.image}
-                        alt={row.name}
-                        heigt="50"
-                        style={{marginBottom:10}}
+                      <TableCell
+                        component="th"
+                        scope="row"
+                        styles={{
+                          display: "flex",
+                          gap: 15,
+                        }}
+                      >
+                        <img
+                          src={row?.image}
+                          alt={row.name}
+                          heigt="50"
+                          style={{ marginBottom: 10 }}
                         ></img>
-
+                        <div
+                          style={{ display: "flex", flexDirection: "column" }}
+                        >
+                          <span
+                            style={{
+                              textTransform: "uppercase",
+                              fontSize: 22,
+                            }}
+                          >
+                            {row.symbol}
+                          </span>
+                          <span style={{ color: "darkgrey" }}>{row.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell align="right">
+                        {symbol}{" "}
+                        {numberWithCommas(row.current_price.toFixed(2))}
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        style={{
+                          color: profit > 0 ? "rgb(14, 203, 129)" : "red",
+                          fontWeight: 500,
+                        }}
+                      >
+                        {profit && "+"}
+                        {row.price_change_percentage_24h.toFixed(2)}%
+                      </TableCell>
+                      <TableCell align="right">
+                        {symbol}{" "}
+                        {numberWithCommas(
+                          row.market_cap.toString().slice(0, -6)
+                        )}
+                        M
                       </TableCell>
                     </TableRow>
                   );
@@ -125,6 +184,20 @@ const CoinsTable = () => {
             </Table>
           )}
         </TableContainer>
+        <Pagination
+          count={(handleSearch()?.length / 10).toFixed(0)}
+          style={{
+            padding: 20,
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+          }}
+          classes={{ ul: classes.pagination }}
+          onChange={(_, value) => {
+            setPage(value);
+            window.scroll(0, 450);
+          }}
+        />
       </Container>
     </ThemeProvider>
   );
