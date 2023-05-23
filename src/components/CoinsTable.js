@@ -67,21 +67,20 @@ const CoinsTable = () => {
     },
   });
 
-  const handleSearchChange = (e) => {
-    setSearch(e.target.value);
-    console.log(search); // Add this line to print the value of search in the console
-  };
 
   const handleSearch = () => {
     return coins.filter((coin) => {
-      coin.name.toLowerCase().includes(search) ||
-        coin.symbol.toLowerCase().includes(search);
+      return (
+        coin.name.toLowerCase().includes(search) ||
+        coin.symbol.toLowerCase().includes(search)
+      );
     });
   };
 
   const Navigate = useNavigate();
 
   const classes = useStyles();
+  console.log(coins)
   return (
     <ThemeProvider theme={darkTheme}>
       <Container style={{ textAlign: "center" }}>
@@ -95,7 +94,7 @@ const CoinsTable = () => {
           label="Seacrh For a Crypto.."
           variant="outlined"
           style={{ marginBottom: 20, width: "100%" }}
-          onChange={handleSearchChange}
+          onChange={(e) => setSearch(e.target.value)}
         />
         <TableContainer>
           {loading ? (
@@ -120,12 +119,12 @@ const CoinsTable = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {handleSearch().map((row) => {
+                {handleSearch().slice((page-1)*10,(page-1)*10+10).map((row) => {
                   const profit = row.price_change_percentage_24h > 0;
                   return (
                     <TableRow
                       onClick={() => Navigate(`/coins/${row.id}`)}
-                      className={classes.raw}
+                      className={classes.row}
                       key={row.name}
                     >
                       <TableCell
@@ -139,7 +138,7 @@ const CoinsTable = () => {
                         <img
                           src={row?.image}
                           alt={row.name}
-                          heigt="50"
+                          height="50"
                           style={{ marginBottom: 10 }}
                         ></img>
                         <div
